@@ -14,7 +14,7 @@ st.markdown("""
 
 st.title("French Graduate Salary Dashboard")
 
-data = pd.read_csv("/Users/sachaboublil/Desktop/Travail 2/DSBA/T2/Data visualization/Dataset_cleaned.csv", sep=";")
+data = pd.read_csv("Dataset_cleaned.csv", sep=";")
 data["Salaire brut annuel estimé"] = pd.to_numeric(data["Salaire brut annuel estimé"], errors="coerce")
 data["Nombre de réponses"] = pd.to_numeric(data["Nombre de réponses"], errors="coerce")
 data["Part des femmes"] = pd.to_numeric(data["Part des femmes"], errors="coerce")
@@ -88,7 +88,7 @@ with col_left:
     st.plotly_chart(fig3, use_container_width=True)
 
 with col_right:
-    df_bours = pd.read_excel('/Users/sachaboublil/Desktop/Travail 2/DSBA/T2/Data visualization/Boursiers France.xlsx')
+    df_bours = pd.read_excel('Boursiers France.xlsx')
     df_bours.columns = ['Academie', 'Proportion']
 
     academie_to_region = {
