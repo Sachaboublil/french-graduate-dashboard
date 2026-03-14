@@ -14,7 +14,7 @@ st.markdown("""
 
 st.title("French Graduate Salary Dashboard")
 
-data = pd.read_csv("Dataset_cleaned.csv", sep=";")
+data = pd.read_csv("/Users/sachaboublil/Desktop/Travail 2/DSBA/T2/Data visualization/Dataset_cleaned.csv", sep=";")
 data["Salaire brut annuel estimé"] = pd.to_numeric(data["Salaire brut annuel estimé"], errors="coerce")
 data["Nombre de réponses"] = pd.to_numeric(data["Nombre de réponses"], errors="coerce")
 data["Part des femmes"] = pd.to_numeric(data["Part des femmes"], errors="coerce")
@@ -44,16 +44,7 @@ with col3:
 
 st.divider()
 
-# Graph 1
-fig1 = px.line(
-    data.groupby("Année")["Salaire brut annuel estimé"].mean().reset_index(),
-    x="Année", y="Salaire brut annuel estimé",
-    title="French graduate average annual salary variation over years",
-    labels={"Année": "Year", "Salaire brut annuel estimé": "Average Annual Salary (€)"}
-)
-st.plotly_chart(fig1, use_container_width=True)
-
-# Graph 2
+# Graph 1 - Bar chart avec sélection multiple
 df_plot = data.groupby("Domaine")["Salaire brut annuel estimé"].mean().reset_index()
 df_plot["Domaine"] = df_plot["Domaine"].replace(domain_mapping)
 df_plot = df_plot.sort_values("Salaire brut annuel estimé")
@@ -62,11 +53,41 @@ fig2 = px.bar(
     df_plot,
     x="Salaire brut annuel estimé", y="Domaine",
     orientation="h",
-    title="French graduate average annual salary across domains",
+    title="French graduate average annual salary across domains (click to filter)",
     labels={"Domaine": "Domain", "Salaire brut annuel estimé": "Gross Annual Salary (€)"}
 )
-fig2.update_layout(xaxis_range=[0, 40000], height=700)
-st.plotly_chart(fig2, use_container_width=True)
+fig2.update_layout(xaxis_range=[0, 40000], height=700, clickmode="event+select")
+fig2.update_traces(unselected=dict(marker=dict(opacity=0.3)))
+
+selected = st.plotly_chart(fig2, use_container_width=True, on_select="rerun", key="bar_chart")
+
+# Récupérer les domaines cliqués
+all_domains = df_plot["Domaine"].tolist()
+
+if selected and selected.get("selection") and selected["selection"].get("points"):
+    selected_domains = list(set([p["label"] for p in selected["selection"]["points"]]))
+else:
+    selected_domains = all_domains  # Par défaut : tous sélectionnés
+
+# Inverser le mapping pour filtrer sur les données originales
+reverse_mapping = {v: k for k, v in domain_mapping.items()}
+selected_domains_fr = [reverse_mapping.get(d, d) for d in selected_domains]
+
+# Graph 2 - Line chart filtré
+filtered = data[data["Domaine"].isin(selected_domains_fr)]
+
+if set(selected_domains) == set(all_domains):
+    title_line = "French graduate average annual salary variation over years"
+else:
+    title_line = f"Average annual salary over years — {', '.join(selected_domains)}"
+
+fig1 = px.line(
+    filtered.groupby("Année")["Salaire brut annuel estimé"].mean().reset_index(),
+    x="Année", y="Salaire brut annuel estimé",
+    title=title_line,
+    labels={"Année": "Year", "Salaire brut annuel estimé": "Average Annual Salary (€)"}
+)
+st.plotly_chart(fig1, use_container_width=True)
 
 # Graph 3 (left) + Graph 4 (right)
 col_left, col_right = st.columns(2)
@@ -88,7 +109,7 @@ with col_left:
     st.plotly_chart(fig3, use_container_width=True)
 
 with col_right:
-    df_bours = pd.read_excel('Boursiers France.xlsx')
+    df_bours = pd.read_excel('/Users/sachaboublil/Desktop/Travail 2/DSBA/T2/Data visualization/Boursiers France.xlsx')
     df_bours.columns = ['Academie', 'Proportion']
 
     academie_to_region = {
