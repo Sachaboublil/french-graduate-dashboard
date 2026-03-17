@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import requests
 
-# --- 1. Page Configuration ---
+# Page configuration
 
 st.set_page_config(page_title="French Graduate Salary Dashboard", layout="wide")
 col_title, col_sign = st.columns([4, 1])
@@ -24,7 +24,7 @@ with col_sign:
 
 
 
-# --- 2. Data Loading & Cleaning ---
+# Data cleaning
 @st.cache_data
 def load_data():
     df = pd.read_csv('Dataset_cleaned.csv', sep=";")
@@ -67,11 +67,11 @@ all_domains = list(domain_mapping.values())
 if "selected_domains" not in st.session_state:
     st.session_state.selected_domains = all_domains.copy()
 
-# --- 3. Filter data based on selection ---
+# Filter data
 selected_fr = [reverse_mapping.get(d, d) for d in st.session_state.selected_domains]
 filtered = data[data["Domaine"].isin(selected_fr)]
 
-# --- 4. KPI Metrics ---
+#KPI
 kpi1, kpi2, kpi3 = st.columns(3)
 with kpi1:
     st.metric("Total Graduates Surveyed", f"{int(filtered['Nombre de réponses'].sum()):,}")
@@ -82,7 +82,7 @@ with kpi3:
 
 st.divider()
 
-# --- 5. Domain Filter Buttons + Bar Chart ---
+#Buttons and Bar Chart
 st.markdown("**Filter by domain:**")
 btn_cols = st.columns(len(all_domains) + 1)
 
@@ -119,7 +119,7 @@ fig_bar = px.bar(
 fig_bar.update_layout(xaxis_range=[0, 45000], height=400, showlegend=False)
 st.plotly_chart(fig_bar, use_container_width=True)
 
-# --- 6. Line Chart ---
+# Line Chart
 title_line = "Salary Trend (All Domains)" if len(st.session_state.selected_domains) == len(all_domains) \
              else f"Salary Trend: {', '.join(st.session_state.selected_domains)}"
 
@@ -132,7 +132,7 @@ fig_line = px.line(
 )
 st.plotly_chart(fig_line, use_container_width=True)
 
-# --- 7. Gender Distribution & Regional Map ---
+#Gender Distribution and Regional Map ---
 col_left, col_right = st.columns(2)
 
 with col_left:
